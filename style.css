@@ -44,6 +44,7 @@ body {
 .todo-container .add-task button svg {
 }
 .todo-container .add-task button svg path {
+  fill: #fff;
 }
 .tasks-content {
   padding: 15px;
@@ -75,22 +76,18 @@ font-size: 15px;
 
 .task-stats {
   overflow: hidden;
-  margin: 10px auto;
+  margin: 7px auto;
   width: 600px;
   font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 5px;
 }
-.task-stats .tasks-count{
-  width: 50%;
-  float: left;
-  padding: 10px;
-}
+.task-stats .tasks-count,
 .task-stats .tasks-completed{
-  width: 50%;
-  float: right;
   padding: 10px;
-  text-align: right;
 }
-
 .task-stats .tasks-count span,
 .task-stats .tasks-completed span {
   font-size: 10px;
@@ -98,15 +95,24 @@ font-size: 15px;
   padding: 2px 5px;
   font-weight: bold;
   border-radius: 5px;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -ms-border-radius: 5px;
-  -o-border-radius: 5px;
 }
-
-.task-stats .tasks-count span{
+.task-stats .tasks-count span,
+.delete-all{
   background-color: #960500;
 }
-.task-stats .tasks-completed span {
+.task-stats .tasks-completed span,
+.finish-all {
   background-color: #03af;
+}
+.swal2-popup{
+  font-size: 10px;
+}
+.delete-all,
+.finish-all{
+  display: none;
+  color: aliceblue;
+  text-align: center;
+  padding: 7px 13px;
+  cursor: pointer;
+  border-radius: 5px;
 }

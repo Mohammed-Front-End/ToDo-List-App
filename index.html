@@ -18,7 +18,7 @@
 
     <div class="add-task">
       <input type="text">
-      <button aria-label="Btn-add-task">
+      <button aria-label="Add Task">
         <svg width="12" height="12" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path d="M12 7.023V4.977a.641.641 0 0 0-.643-.643h-3.69V.643A.641.641 0 0 0 7.022 0H4.977a.641.641 0 0 0-.643.643v3.69H.643A.641.641 0 0 0 0 4.978v2.046c0 .356.287.643.643.643h3.69v3.691c0 .356.288.643.644.643h2.046a.641.641 0 0 0 .643-.643v-3.69h3.691A.641.641 0 0 0 12 7.022Z" id="b"/>
           </defs><use fill="#FF7E1B" fill-rule="nonzero" xlink:href="#b"/>
         </svg>
@@ -34,6 +34,9 @@
         Tasks <span>0</span>
       </div>
 
+      <i class="delete-all">Delete All Tasks</i>
+      <i class="finish-all">Finish All Tasks</i>
+
       <div class="tasks-completed">
         completed <span>0</span>
       </div>
@@ -42,6 +45,7 @@
 
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="script.js"></script>
 </body>
 </html>
