@@ -11,6 +11,8 @@
 }
 body {
   font-family: "RobotoCondensed";
+  height: 100vh;
+  background-color: #000A09;
 }
 
 .todo-container {
@@ -28,9 +30,9 @@ body {
   display: inline-block;
   padding: 10px 15px;
   border: none;
-  background-color: #c7c4c4bc;
+  background-color: rgb(199 196 196 / 74%);
   width: calc(100% - 30px);
-  color: #f6f6f6;
+  color: #261212;
 }
 .todo-container .add-task input:focus{
   outline: none;
@@ -51,7 +53,7 @@ body {
 }
 
 .no-tasks-Massage {
-color: #777;
+color:#424242;
 font-size: 15px;
 }
 .tasks-content > span{
