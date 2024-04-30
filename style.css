@@ -60,6 +60,11 @@ font-size: 15px;
   display: block;
   background-color: #fff;
   padding: 10px;
+  position: relative;
+}
+.date-ForElement{
+  left: 50%;
+    position: absolute;
 }
 .tasks-content > span:not(:last-child){
   margin-bottom: 10px;
