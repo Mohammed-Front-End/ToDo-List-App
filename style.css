@@ -11,7 +11,7 @@
 }
 body {
   font-family: "RobotoCondensed";
-  height: 100vh;
+  height: 90vh;
   background-color: #000A09;
 }
 
@@ -60,8 +60,22 @@ font-size: 15px;
   display: block;
   background-color: #fff;
   padding: 10px;
+  cursor: move;
   position: relative;
 }
+.tasks-content > span:hover{
+  cursor: grab;
+}
+.tasks-content > span:active {
+  cursor: grabbing;
+}
+
+
+
+
+
+
+
 .date-ForElement{
   left: 50%;
     position: absolute;

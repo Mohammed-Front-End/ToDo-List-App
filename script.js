@@ -6,9 +6,6 @@
   TODO:------------------ Hard Tasks ------------------
   ![5] Add To Tasks To The Local Storage
   ![6] add Date on task  
-  ?[7] Add Drag drop and drag drop to To The Local Storage
-  [8] add all tasks is finished to element Tasks is Finished
-  [9] add all tasks is Deleted to element Tasks is Deleted
 */
 
 // Setting Up Variables
@@ -52,6 +49,9 @@ function addTask(text, formattedDate) {
   } else {
     // Create span element 
     let mainSpan = document.createElement('span');
+    // Set a unique ID for each task-box element
+    let taskId = 'task_' + Math.random().toString(36).substr(2, 9); // Generate a random ID
+    mainSpan.id = taskId;
     deleteAll.style.display = 'block';
     finishAll.style.display = 'block';
 
@@ -63,6 +63,7 @@ function addTask(text, formattedDate) {
 
     // Add class to mainElement
     mainSpan.className += 'task-box';
+    mainSpan.draggable = true;
 
     // Format the date and time as desired
     // Add Element Date  
@@ -87,11 +88,15 @@ function addTask(text, formattedDate) {
     // Add the task to the container
     tasksContainer.appendChild(mainSpan);
 
+    // Add event listeners for drag and drop
+    mainSpan.addEventListener('dragstart', handleDragStart);
+    mainSpan.addEventListener('dragover', handleDragOver);
+    mainSpan.addEventListener('drop', handleDrop);
+
     // calculate tasks
     calculate();
   }
 }
-
 theAddButton.onclick = function () {
   // if input is empty 
   if (theInput.value === '') {
@@ -247,3 +252,5 @@ function toggleNoTasksMessage() {
     noTasksMsg.remove()
   } 
 }
+
+
