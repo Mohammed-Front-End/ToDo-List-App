@@ -88,7 +88,9 @@ function addTask(text, formattedDate) {
     // Add the task to the container
     tasksContainer.appendChild(mainSpan);
 
-    // Add event listeners for drag and drop
+
+    // Enable drag and drop for the task
+    mainSpan.draggable = true;
     mainSpan.addEventListener('dragstart', handleDragStart);
     mainSpan.addEventListener('dragover', handleDragOver);
     mainSpan.addEventListener('drop', handleDrop);
@@ -97,6 +99,37 @@ function addTask(text, formattedDate) {
     calculate();
   }
 }
+
+
+function handleDragStart(event) {
+  event.dataTransfer.setData('text/plain', event.target.id);
+}
+
+function handleDragOver(event) {
+  event.preventDefault();
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  const taskId = event.dataTransfer.getData('text/plain');
+  const draggedTask = document.getElementById(taskId);
+  const tasks = Array.from(tasksContainer.querySelectorAll('.task-box'));
+  const indexDragged = tasks.indexOf(draggedTask);
+  const indexTarget = tasks.indexOf(event.currentTarget);
+  if (indexDragged !== -1 && indexTarget !== -1) {
+    if (indexDragged < indexTarget) {
+      tasksContainer.insertBefore(draggedTask, event.currentTarget.nextSibling);
+    } else {
+      tasksContainer.insertBefore(draggedTask, event.currentTarget);
+    }
+  }
+}
+
+
+
+
+
+
 theAddButton.onclick = function () {
   // if input is empty 
   if (theInput.value === '') {
