@@ -13,6 +13,8 @@ body {
   font-family: "RobotoCondensed";
   height: 90vh;
   background-color: #000A09;
+  display: flex;
+  align-items: center;
 }
 
 .todo-container {
@@ -50,6 +52,7 @@ body {
 }
 .tasks-content {
   padding: 15px;
+  background-color: #b2d9d0;
 }
 
 .no-tasks-Massage {
@@ -58,10 +61,11 @@ font-size: 15px;
 }
 .tasks-content > span{
   display: block;
-  background-color: #fff;
+  background-color: #f0fbf9;
   padding: 10px;
   cursor: move;
   position: relative;
+  transition: background-color 0.5s;
 }
 .tasks-content > span:hover{
   cursor: grab;
@@ -71,14 +75,10 @@ font-size: 15px;
 }
 
 
-
-
-
-
-
 .date-ForElement{
-  left: 50%;
-    position: absolute;
+  left: 75%;
+  position: absolute;
+  font-size: 12px;
 }
 .tasks-content > span:not(:last-child){
   margin-bottom: 10px;
@@ -136,4 +136,9 @@ font-size: 15px;
   padding: 7px 13px;
   cursor: pointer;
   border-radius: 5px;
+}
+
+
+.selected {
+  opacity: 0.6;
 }

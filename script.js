@@ -17,23 +17,30 @@ let tasksCompleted = document.querySelector('.tasks-completed span');
 let taskStats = document.querySelector('.task-stats')
 let deleteAll = document.querySelector('.delete-all');
 let finishAll = document.querySelector('.finish-all');
-var svgCode = '';
+let svgCode = '<svg class="delete" width="14" height="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path d="M0 2.625V1.75C0 1.334.334 1 .75 1h3.5l.294-.584A.741.741 0 0 1 5.213 0h3.571a.75.75 0 0 1 .672.416L9.75 1h3.5c.416 0 .75.334.75.75v.875a.376.376 0 0 1-.375.375H.375A.376.376 0 0 1 0 2.625Zm13 1.75V14.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 1 14.5V4.375C1 4.169 1.169 4 1.375 4h11.25c.206 0 .375.169.375.375ZM4.5 6.5c0-.275-.225-.5-.5-.5s-.5.225-.5.5v7c0 .275.225.5.5.5s.5-.225.5-.5v-7Zm3 0c0-.275-.225-.5-.5-.5s-.5.225-.5.5v7c0 .275.225.5.5.5s.5-.225.5-.5v-7Zm3 0c0-.275-.225-.5-.5-.5s-.5.225-.5.5v7c0 .275.225.5.5.5s.5-.225.5-.5v-7Z" id="a"/></defs><use class="delete" fill="#C3CAD9" fill-rule="nonzero" xlink:href="#a"/></svg>';
 
 // Foucs On Input Field
 window.onload = function () {
   theInput.focus();
 }
+let iText = null;
 
 function addTask(text, formattedDate) {
   // Check if the task already exists
   let taskExists = Array.from(document.querySelectorAll('.task-box')).some(task => {
     // Extract the task description from task.textContent
-    let taskText = task.textContent.trim();
-    let taskDescription = taskText.split('Time of creation:')[0];
+    let taskText = task.querySelector('i').textContent.trim();
+
+    let taskDescription = taskText.split('Time of creation:')[0].trim();
     // Compare the extracted task description with the input text
     let comparisonResult = taskDescription.trim() === text;
+    console.log("task Description",taskDescription);
+    console.log("comparisonResult",comparisonResult);
+    
     return comparisonResult;
   });
+  console.log("task Exists",taskExists);
+
 
   if(taskExists){
     // Task already exists, show error message
@@ -45,93 +52,106 @@ function addTask(text, formattedDate) {
   } else {
     // Create span element 
     let mainSpan = document.createElement('span');
-    // Set a unique ID for each task-box element
-    let taskId = 'task_' + Math.random().toString(36).substr(2, 9); // Generate a random ID
-    mainSpan.id = taskId;
+
     deleteAll.style.display = 'block';
     finishAll.style.display = 'block';
     // Append Delete Button  
     mainSpan.innerHTML = svgCode;
+    iText = document.createElement('i')
+    iText.appendChild(document.createTextNode(text))
     // Add new text  
-    mainSpan.appendChild(document.createTextNode(text));
+    mainSpan.appendChild(iText);
     // Add class to mainElement
     mainSpan.className += 'task-box';
-    mainSpan.draggable = true;
-
     // Format the date and time as desired
-    // Add Element Date  
     let elementDate = document.createElement('span');
     elementDate.setAttribute('class', 'date-ForElement')
-    elementDate.innerHTML = `Time of creation: ${formattedDate}`;
+    elementDate.innerHTML = `${formattedDate}`;
     // Append element Date to main span
     mainSpan.appendChild(elementDate);
-
     // Retrieve existing tasks from local storage or initialize as an empty array
     let storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    // Order is initially set to the current number of tasks
-    let order = storedTasks.length;
+
     // Store task details in local storage
     let taskDetails = {
-      id: taskId, // Assign the generated ID to the task
       text: text,
       dateCreated: formattedDate,
-      order: order // Include the order property
     };
     // Add the new task to the array
     storedTasks.push(taskDetails);
     // Store the updated tasks array back in local storage
     localStorage.setItem('tasks', JSON.stringify(storedTasks));
-    
     // Add the task to the container
     tasksContainer.appendChild(mainSpan);
 
+    const updateLocalStorageFromDOM = () => {
+      const tasks = Array.from(tasksContainer.querySelectorAll('.task-box')).map((task, index) => {
+        let taskText = task.querySelector('i').textContent.trim();
+        return {
+          text: taskText,
+          dateCreated: task.querySelector('.date-ForElement').textContent.trim(),
+        };
+      });
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    };
+    const observer = new MutationObserver((mutationsList) => {
+      mutationsList.forEach(mutation => {
+        if (mutation.type === 'childList') {
+          updateLocalStorageFromDOM();
+        }
+      });
+    });
+    observer.observe(tasksContainer, { childList: true });
+
     // Enable drag and drop for the task
     mainSpan.draggable = true;
-    mainSpan.addEventListener('dragstart', handleDragStart);
-    mainSpan.addEventListener('dragover', handleDragOver);
-    mainSpan.addEventListener('drop', handleDrop);
-    // calculate tasks
-    calculate();
-  }
-}
-function handleDragStart(event) {
-  event.dataTransfer.setData('text/plain', event.target.id);
-}
-function handleDragOver(event) {
-  event.preventDefault();
-}
-function handleDrop(event) {
-  event.preventDefault();
-  const taskId = event.dataTransfer.getData('text/plain');
-  const draggedTask = document.getElementById(taskId);
-  const tasks = Array.from(tasksContainer.querySelectorAll('.task-box'));
-  const indexDragged = tasks.indexOf(draggedTask);
-  const indexTarget = tasks.indexOf(event.currentTarget);
-  
-  // Swap the order and id properties of the dragged task and the target task
-  if (indexDragged !== -1 && indexTarget !== -1) {
-    const storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    const draggedTaskInfo = storedTasks.find(task => task.id === taskId);
-    const targetTaskInfo = storedTasks.find(task => task.order === indexTarget);
 
-    // Update the order and id properties
-    draggedTaskInfo.order = indexTarget;
-    targetTaskInfo.order = indexDragged;
+    mainSpan.addEventListener(`dragstart`, (evt) => {
+      evt.target.classList.add(`selected`);
+    });
+    mainSpan.addEventListener(`dragend`, (evt) => {
+      evt.target.classList.remove(`selected`);
+    });
 
-    // Swap the order of the tasks in the array
-    storedTasks[indexTarget] = draggedTaskInfo;
-    storedTasks[indexDragged] = targetTaskInfo;
-
-    localStorage.setItem('tasks', JSON.stringify(storedTasks));
+    const getNextElement = (cursorPosition, currentElement) => {
+      const currentElementCoord = currentElement.getBoundingClientRect();
+      const currentElementCenter = currentElementCoord.y + currentElementCoord.height / 2;
+      console.log(currentElementCenter);
+      const nextElement = (cursorPosition < currentElementCenter) ? currentElement : currentElement.nextElementSibling;
+      return nextElement;
+    };
     
-    // Swap the positions of the tasks on the page
-    if (indexDragged < indexTarget) {
-      tasksContainer.insertBefore(draggedTask, event.currentTarget.nextSibling);
-    } else {
-      tasksContainer.insertBefore(draggedTask, event.currentTarget);
-    }
-  }
-}
+    mainSpan.addEventListener(`dragover`, (evt) => {
+      evt.preventDefault();
+      const activeElement = tasksContainer.querySelector(`.selected`);
+      const currentElement = evt.target;
+      const isMoveable = activeElement !== currentElement && currentElement.classList.contains(`task-box`);
+      if (!isMoveable) {
+        return;
+      }
+      const nextElement = getNextElement(evt.clientY, currentElement);
+      if (nextElement && activeElement === nextElement.previousElementSibling ||activeElement === nextElement) {
+        return;
+      }
+      tasksContainer.insertBefore(activeElement, nextElement);
+    });
+    calculate();
+  };
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
