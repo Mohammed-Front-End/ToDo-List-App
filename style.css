@@ -1,9 +1,7 @@
 @font-face {
-  font-family: "RobotoCondensed";
-  src: url(/Fonts/Roboto_Condensed/RobotoCondensed-VariableFont_wght.woff2)
-    format("woff2");
-
-  font-display: optional; /* swap */
+  font-family: "RobotoCondensed",system-ui;
+  src: url(/Fonts/RobotoCondensed.woff2) format("woff2");
+  font-display: optional;
   font-style: normal;
 }
 * {
@@ -44,8 +42,6 @@ body {
   border: none;
   cursor: pointer;
   background-color: transparent;
-}
-.todo-container .add-task button svg {
 }
 .todo-container .add-task button svg path {
   fill: #fff;
