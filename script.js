@@ -30,18 +30,11 @@ function addTask(text, formattedDate) {
   let taskExists = Array.from(document.querySelectorAll('.task-box')).some(task => {
     // Extract the task description from task.textContent
     let taskText = task.querySelector('i').textContent.trim();
-
     let taskDescription = taskText.split('Time of creation:')[0].trim();
     // Compare the extracted task description with the input text
     let comparisonResult = taskDescription.trim() === text;
-    console.log("task Description",taskDescription);
-    console.log("comparisonResult",comparisonResult);
-    
     return comparisonResult;
   });
-  console.log("task Exists",taskExists);
-
-
   if(taskExists){
     // Task already exists, show error message
     Swal.fire({
@@ -52,7 +45,6 @@ function addTask(text, formattedDate) {
   } else {
     // Create span element 
     let mainSpan = document.createElement('span');
-
     deleteAll.style.display = 'block';
     finishAll.style.display = 'block';
     // Append Delete Button  
@@ -83,6 +75,40 @@ function addTask(text, formattedDate) {
     localStorage.setItem('tasks', JSON.stringify(storedTasks));
     // Add the task to the container
     tasksContainer.appendChild(mainSpan);
+    updateLocalStorageFromDOM();
+    // Enable drag and drop for the task
+    mainSpan.draggable = true;
+    mainSpan.addEventListener(`dragstart`, (evt) => {
+      evt.target.classList.add(`selected`);
+    });
+    mainSpan.addEventListener(`dragend`, (evt) => {
+      evt.target.classList.remove(`selected`);
+    });
+    mainSpan.addEventListener(`dragover`, dragover)
+    calculate();
+  };
+};
+function getNextElement(cursorPosition, currentElement) {
+  const currentElementCoord = currentElement.getBoundingClientRect();
+  const currentElementCenter = currentElementCoord.y + currentElementCoord.height / 2;
+  // console.log(currentElementCenter);
+  const nextElement = (cursorPosition < currentElementCenter) ? currentElement : currentElement.nextElementSibling;
+  return nextElement;
+};
+function dragover (evt) {
+  evt.preventDefault();
+  const activeElement = tasksContainer.querySelector(`.selected`);
+  const currentElement = evt.target;
+  const isMoveable = activeElement !== currentElement && currentElement.classList.contains(`task-box`);
+  if (!isMoveable) {
+    return;
+  }
+  const nextElement = getNextElement(evt.clientY, currentElement);
+  if (nextElement && activeElement === nextElement.previousElementSibling ||activeElement === nextElement) {
+    return;
+  }
+  tasksContainer.insertBefore(activeElement, nextElement);
+};
 
     const updateLocalStorageFromDOM = () => {
       const tasks = Array.from(tasksContainer.querySelectorAll('.task-box')).map((task, index) => {
@@ -102,50 +128,6 @@ function addTask(text, formattedDate) {
       });
     });
     observer.observe(tasksContainer, { childList: true });
-
-    // Enable drag and drop for the task
-    mainSpan.draggable = true;
-
-    mainSpan.addEventListener(`dragstart`, (evt) => {
-      evt.target.classList.add(`selected`);
-    });
-    mainSpan.addEventListener(`dragend`, (evt) => {
-      evt.target.classList.remove(`selected`);
-    });
-
-    const getNextElement = (cursorPosition, currentElement) => {
-      const currentElementCoord = currentElement.getBoundingClientRect();
-      const currentElementCenter = currentElementCoord.y + currentElementCoord.height / 2;
-      console.log(currentElementCenter);
-      const nextElement = (cursorPosition < currentElementCenter) ? currentElement : currentElement.nextElementSibling;
-      return nextElement;
-    };
-    
-    mainSpan.addEventListener(`dragover`, (evt) => {
-      evt.preventDefault();
-      const activeElement = tasksContainer.querySelector(`.selected`);
-      const currentElement = evt.target;
-      const isMoveable = activeElement !== currentElement && currentElement.classList.contains(`task-box`);
-      if (!isMoveable) {
-        return;
-      }
-      const nextElement = getNextElement(evt.clientY, currentElement);
-      if (nextElement && activeElement === nextElement.previousElementSibling ||activeElement === nextElement) {
-        return;
-      }
-      tasksContainer.insertBefore(activeElement, nextElement);
-    });
-    calculate();
-  };
-};
-
-
-
-
-
-
-
-
 
 
 
