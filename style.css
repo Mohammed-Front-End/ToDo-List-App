@@ -13,9 +13,8 @@ body {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  background-image: url(img/list-icon-notebook-with-completed-todo-list-3d-render_471402-428.webp);
-  background-position: center;
-  background-repeat: no-repeat;
+  background-image: url(img//todo-list-3d.webp);
+  background-size: cover;
 }
 
 .todo-container {
