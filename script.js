@@ -29,7 +29,7 @@ function addTask(text, formattedDate) {
   // Check if the task already exists
   let taskExists = Array.from(document.querySelectorAll('.task-box')).some(task => {
     // Extract the task description from task.textContent
-    let taskText = task.querySelector('i').textContent.trim();
+    let taskText = task.querySelector('p').textContent.trim();
     let taskDescription = taskText.split('Time of creation:')[0].trim();
     // Compare the extracted task description with the input text
     let comparisonResult = taskDescription.trim() === text;
@@ -49,7 +49,8 @@ function addTask(text, formattedDate) {
     finishAll.style.display = 'block';
     // Append Delete Button  
     mainSpan.innerHTML = svgCode;
-    iText = document.createElement('i')
+    iText = document.createElement('p')
+    iText.className += 'Text-task';
     iText.appendChild(document.createTextNode(text))
     // Add new text  
     mainSpan.appendChild(iText);
@@ -112,7 +113,7 @@ function dragover (evt) {
 
     const updateLocalStorageFromDOM = () => {
       const tasks = Array.from(tasksContainer.querySelectorAll('.task-box')).map((task, index) => {
-        let taskText = task.querySelector('i').textContent.trim();
+        let taskText = task.querySelector('p').textContent.trim();
         return {
           text: taskText,
           dateCreated: task.querySelector('.date-ForElement').textContent.trim(),
