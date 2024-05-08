@@ -10,7 +10,7 @@
   margin: 0;
 }
 body {
-  font-family: "RobotoCondensed";
+  font-family: "RobotoCondensed",system-ui;
   min-height: 100vh;
   display: flex;
   align-items: center;
