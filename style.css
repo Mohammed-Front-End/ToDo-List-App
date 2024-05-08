@@ -1,6 +1,6 @@
 @font-face {
   /* ,system-ui */
-  font-family: "RobotoCondensed";
+  font-family: "RobotoCondensed",system-ui;
   src: url(Fonts/RobotoCondensed-VariableFont_wght.woff2) format("woff2");
   font-display: optional;
   font-style: normal;
