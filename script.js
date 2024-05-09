@@ -24,6 +24,11 @@ window.onload = function () {
   theInput.focus();
 }
 let iText = null;
+let storedTasks = [];
+if(localStorage.getItem('tasks')){
+  storedTasks = JSON.parse(localStorage.getItem('tasks') );//|| []
+}
+getDatatFromLocStor()
 
 function addTask(text, formattedDate) {
   // Check if the task already exists
@@ -58,22 +63,45 @@ function addTask(text, formattedDate) {
     mainSpan.className += 'task-box';
     // Format the date and time as desired
     let elementDate = document.createElement('span');
-    elementDate.setAttribute('class', 'date-ForElement')
+    elementDate.setAttribute('class', 'date-ForElement');
     elementDate.innerHTML = `${formattedDate}`;
     // Append element Date to main span
     mainSpan.appendChild(elementDate);
+
+
+
+    
     // Retrieve existing tasks from local storage or initialize as an empty array
-    let storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
     // Store task details in local storage
     let taskDetails = {
       text: text,
       dateCreated: formattedDate,
+      finishTask: false,
+      id: null 
     };
+    // Store task details in local storage
+    taskDetails.id = taskDetails.id !== null ? taskDetails.id : generateRandomId();
     // Add the new task to the array
     storedTasks.push(taskDetails);
+    mainSpan.setAttribute('id',taskDetails.id);
     // Store the updated tasks array back in local storage
     localStorage.setItem('tasks', JSON.stringify(storedTasks));
+
+
+
+
+
+
+    document.addEventListener('click', handleTaskClick);
+
+    // create input checkbox 
+    let inputCheckbox = document.createElement('input')
+    inputCheckbox.setAttribute('type','checkbox')
+    // add class name 
+    inputCheckbox.className += 'inputChacked';
+    mainSpan.appendChild(inputCheckbox);
     // Add the task to the container
     tasksContainer.appendChild(mainSpan);
     updateLocalStorageFromDOM();
@@ -89,6 +117,12 @@ function addTask(text, formattedDate) {
     calculate();
   };
 };
+// Create Random id 
+function generateRandomId() {
+  const randomId = Math.floor(Math.random() * 1000000); 
+  return randomId;
+}
+
 function getNextElement(cursorPosition, currentElement) {
   const currentElementCoord = currentElement.getBoundingClientRect();
   const currentElementCenter = currentElementCoord.y + currentElementCoord.height / 2;
@@ -110,33 +144,29 @@ function dragover (evt) {
   }
   tasksContainer.insertBefore(activeElement, nextElement);
 };
-
-    const updateLocalStorageFromDOM = () => {
-      const tasks = Array.from(tasksContainer.querySelectorAll('.task-box')).map((task, index) => {
-        let taskText = task.querySelector('p').textContent.trim();
-        return {
-          text: taskText,
-          dateCreated: task.querySelector('.date-ForElement').textContent.trim(),
-        };
-      });
-      localStorage.setItem('tasks', JSON.stringify(tasks));
+const observer = new MutationObserver((mutationsList) => {
+  mutationsList.forEach(mutation => {
+    if (mutation.type === 'childList') {
+      updateLocalStorageFromDOM();
+    }
+  });
+});
+observer.observe(tasksContainer, { childList: true });
+const updateLocalStorageFromDOM = () => {
+  const tasks = Array.from(tasksContainer.querySelectorAll('.task-box')).map((task, index) => {
+    let taskText = task.querySelector('p').textContent.trim();
+    let taskId = task.getAttribute('id'); // Get the task ID from data-id attribute
+    let checkbox = task.querySelector('input[type="checkbox"]');
+    let finishTask = checkbox ? checkbox.checked : false; // Check if the checkbox is checked
+    return {
+      text: taskText,
+      dateCreated: task.querySelector('.date-ForElement').textContent.trim(),
+      finishTask: finishTask, // Use the checkbox status to determine task completion
+      id: taskId // Use the existing task ID
     };
-    const observer = new MutationObserver((mutationsList) => {
-      mutationsList.forEach(mutation => {
-        if (mutation.type === 'childList') {
-          updateLocalStorageFromDOM();
-        }
-      });
-    });
-    observer.observe(tasksContainer, { childList: true });
-
-
-
-
-
-
-
-
+  });
+  addDatatoLocStor(tasks)
+};
 
 
 
@@ -165,7 +195,6 @@ theAddButton.onclick = function () {
     calculate()
   }
 };
-
 // Delete all Tasks when click btn deleteAll
 deleteAll.addEventListener('click', function () {
   let allTasks = document.querySelectorAll('.task-box');
@@ -180,24 +209,40 @@ deleteAll.addEventListener('click', function () {
   }
 });
 
+
+
+
+function updateLocalStorageTaskCompletion(taskId, isCompleted) {
+  storedTasks.forEach(task => {
+    if (task.id === taskId) {
+      // Update the finishTask property
+      task.finishTask = isCompleted;
+    }
+  });
+  // Update local storage with the modified storedTasks array
+  addDatatoLocStor(storedTasks)
+  // getDatatFromLocStor()
+}
 window.onload = function () {
   // Focus on input field
   theInput.focus();
-
   // Check if local storage is supported by the browser
   if (typeof(Storage) !== "undefined") {
+
     // Retrieve tasks from local storage
-    let storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    console.log('storedTasks-----',storedTasks);
+
     // Clear existing tasks in the DOM
     tasksContainer.innerHTML = '';
-    localStorage.clear()
+    // Clear local storage after updating the DOM
+    // localStorage.clear();
     // Loop through the stored tasks and add them to the DOM
     storedTasks.forEach(taskDetails => {
-      addTask(taskDetails.text, taskDetails.dateCreated);
+      addTask(taskDetails.text, taskDetails.dateCreated,taskDetails.finishTask,taskDetails.id);
     });
     // Update task counts
     calculate();
-
     // Check if there are no tasks and display appropriate message
     if (storedTasks.length === 0) {
       noTasks();
@@ -206,6 +251,53 @@ window.onload = function () {
     console.log("Local storage is not supported in this browser.");
   }
 };
+// Revised handleTaskClick function
+function handleTaskClick(e) {
+  // Handle checkbox clicks
+  if (e.target.type === 'checkbox') {
+    let taskId = e.target.closest('.task-box').getAttribute('id');
+    e.target.parentNode.classList.toggle('finished');
+    updateLocalStorageTaskCompletion(taskId, e.target.checked);
+  }
+  // Handle clicking on task boxes
+  if (e.target.classList.contains('task-box') && e.target.type !== 'checkbox') {
+    let taskBox = e.target;
+    let checkbox = taskBox.querySelector('input[type="checkbox"]');
+    let taskId = taskBox.getAttribute('id');
+    e.target.classList.toggle('finished');
+    checkbox.checked = !checkbox.checked;
+    checkbox.dispatchEvent(new Event('change'));
+    updateLocalStorageTaskCompletion(taskId, checkbox.checked);
+  }
+  // Handle clicking on the "Finish All" button
+  if (e.target.classList.contains('finish-all')) {
+    let allTasks = document.querySelectorAll('.task-box');
+    allTasks.forEach(task => {
+      let checkbox = task.querySelector('input[type="checkbox"]');
+      let taskId = task.getAttribute('id');
+      task.classList.add('finished');
+      checkbox.checked = true;
+      checkbox.dispatchEvent(new Event('change'));
+      updateLocalStorageTaskCompletion(taskId, true);
+    });
+  }
+  // calculate tasks
+  calculate();
+}
+
+
+function addDatatoLocStor(arrOfTasks){
+  window.localStorage.setItem("tasks",JSON.stringify(arrOfTasks))
+}
+function getDatatFromLocStor(){
+  let data = window.localStorage.getItem("tasks")
+  if(data){
+    let tasks = JSON.parse(data)
+  }
+}
+
+
+
 
 document.addEventListener('click',function(e) {
   if (e.target.classList.contains('delete')) {
@@ -215,11 +307,12 @@ document.addEventListener('click',function(e) {
       let taskText = taskBox.textContent.trim().split('Time of creation:')[0].trim();
 
       // Retrieve existing tasks from localStorage
-      let storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
       // Find the index of the task to be removed
       let taskIndex = storedTasks.findIndex(task => task.text === taskText);
-
+      console.log('taskIndex', taskIndex);
+      
       // Remove the task from the storedTasks array and update localStorage
       if (taskIndex !== -1) {
         storedTasks.splice(taskIndex, 1);
@@ -228,7 +321,6 @@ document.addEventListener('click',function(e) {
       // Remove the task-box element from the DOM
       taskBox.remove();
     }
-
     // chack number of tasks inside the container
     if(tasksContainer.childElementCount == 0){
       noTasks()
@@ -237,19 +329,6 @@ document.addEventListener('click',function(e) {
     // calculate tasks
     calculate()
   }
-
-  if (e.target.classList.contains('task-box')) {
-    e.target.classList.toggle('finished')
-    // calculate tasks
-  }
-  // Add class Finish to Task-boxes when click btn FinishAll
-  finishAll.onclick = function(e){
-    let allTasks = document.querySelectorAll('.task-box');
-    allTasks.forEach(task => {
-      task.classList.add('finished');
-    });
-  }
-  calculate()
 }) 
 
 // function to create no tasks message
