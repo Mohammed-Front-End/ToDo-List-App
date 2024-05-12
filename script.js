@@ -30,7 +30,7 @@ let iText = null;
 let taskDetails = [];
 
 
-function addTask(text, formattedDate,fin,id) {
+function addTask(text, formattedDate,finish,boo) {
   // Check if the task already exists
   let taskExists = Array.from(document.querySelectorAll('.task-box')).some(task => {
     // Extract the task description from task.textContent
@@ -65,8 +65,7 @@ function addTask(text, formattedDate,fin,id) {
     // Add new text  
     mainSpan.appendChild(iText);
     // Add class to mainElement
-    mainSpan.className += 'task-box finished';
-
+    mainSpan.className += 'task-box';
     
     // Format the date and time as desired
     let elementDate = document.createElement('span');
@@ -76,40 +75,21 @@ function addTask(text, formattedDate,fin,id) {
     mainSpan.appendChild(elementDate);
 
 
-
-
-
-    // Retrieve existing tasks from local storage or initialize as an empty array
-    let storedTasks = JSON.parse(localStorage.getItem('tasks'));
+    // Store task details in local storage
+    addItemToCart(text ,formattedDate , finish,boo )
 
     // Store task details in local storage
-    let taskDetails = {
-      text: 'null',
-      dateCreated: 'null',
-      finishTask: fin,
-      id: null 
-    };
-    // Store task details in local storage
-    taskDetails.id = taskDetails.id !== null ? taskDetails.id : generateRandomId();
-    // Add the new task to the array
-    storedTasks.push(taskDetails);
-
-
-
-    mainSpan.setAttribute('id',taskDetails.id);
-    // localStorage.setItem('tasks', JSON.stringify(storedTasks));
-
-
-
-
-    
-
+    // boo.id = boo.id !== null ? boo.id : generateRandomId();
+    mainSpan.setAttribute('id',generateRandomId());
     // create input checkbox 
     let inputCheckbox = document.createElement('input')
     inputCheckbox.setAttribute('type','checkbox')
-    if (taskDetails.finishTask ) {
-      mainSpan.className += ' finished ';
-    }
+    // if(finish.finishTask){
+    //   console.log(inputCheckbox.checked);
+    // }
+
+    
+
     // add class name 
     inputCheckbox.className += 'inputChacked';
     mainSpan.appendChild(inputCheckbox);
@@ -128,11 +108,99 @@ function addTask(text, formattedDate,fin,id) {
   };
 };
 
+function addItemToCart(text,formattedDate,finish,boo)  {
+  let storedTasks = JSON.parse(localStorage.getItem('tasks')||"[]"); // get current objects
+  let taskDetails = {
+    text:           text,
+    dateCreated:    formattedDate,
+    finishTask:     finish,
+    id:             boo 
+  };
+  storedTasks.push(taskDetails); //push new one
+
+  console.log(taskDetails) 
+  localStorage.setItem('tasks', JSON.stringify(storedTasks));
+}
+
+
+
+
+
+const updateFromDOM = () => {
+  const tasks = Array.from(tasksContainer.querySelectorAll('.task-box')).map((task, index) => {
+    let storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    const taskText = task.querySelector('p').textContent.trim();
+    const taskId = task.getAttribute('id');
+    const checkbox = task.querySelector('input[type="checkbox"]');
+    // Update finishTask property based on checkbox state and add class to task element
+    storedTasks.forEach(storedTask => {
+      if (storedTask.id == taskId) {
+        checkbox.checked;
+        storedTask.finishTask
+        // task.classList.toggle('finished');
+      }
+    });
+
+    // Add or update task in local storage
+    addItemToCart(taskText, task.querySelector('.date-ForElement').textContent.trim(), storedTasks.finishTask, taskId);
+
+    return {
+      text: taskText,
+      dateCreated: task.querySelector('.date-ForElement').textContent.trim(),
+      finishTask: storedTasks.finishTask,
+      id: taskId
+    };
+  });
+  console.log(tasks);
+  
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+};
+
+
+window.onload = function () {
+  // Focus on input field
+  theInput.focus();
+  // Check if local storage is supported by the browser
+  if (typeof(Storage) !== "undefined") {
+
+    // Retrieve tasks from local storage
+    let storedTasks = JSON.parse(localStorage.getItem('tasks'));
+    // Clear existing tasks in the DOM
+    tasksContainer.innerHTML = '';
+    // Loop through the stored tasks and add them to the DOM if they exist
+    if (storedTasks) {
+      for (let i = 0; i < storedTasks.length; i++) {
+        let taskDetails = storedTasks[i];
+        addItemToCart(taskDetails.text,taskDetails.dateCreated,taskDetails.finishTask,taskDetails.id) 
+        //! console.log(taskDetails.finishTask);
+      }
+    }
+    //! console.log(storedTasks);
+    
+
+
+
+    // Update task counts
+    calculate();
+    // Initialize the updateFromDOM function
+    // localStorage.setItem('tasks', JSON.stringify(storedTasks));
+    updateFromDOM();
+
+    // Check if there are no tasks and display appropriate message
+    if (!storedTasks || storedTasks.length === 0) {
+      noTasks();
+    }
+  } else {
+    console.log("Local storage is not supported in this browser.");
+  }
+};
+
+
+
 
 // Create Random id 
 function generateRandomId() {
   const randomId = Math.floor(Math.random() * 1000000); 
-  
   return randomId;
 }
 
@@ -158,93 +226,6 @@ function dragover (evt) {
   tasksContainer.insertBefore(activeElement, nextElement);
 };
 
-
-
-
-
-
-
-    const updateFromDOM = () => {
-      const tasks = Array.from(tasksContainer.querySelectorAll('.task-box')).map((task, index) => {
-        let storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        const taskText = task.querySelector('p').textContent.trim();
-        const taskId = task.getAttribute('id');
-        const checkbox = task.querySelector('input[type="checkbox"]');
-        
-
-        console.log(checkbox);
-
-        // Update finishTask property based on checkbox state and add class to task element
-        storedTasks.forEach(storedTask => {
-          if (storedTask.id == taskId) {
-            storedTask.finishTask = checkbox.checked;
-            if (checkbox.checked) {
-              
-              task.classList.add('finished');
-            } else {
-              task.classList.remove('finished');
-            }
-          }
-        });
-    
-        return {
-          text: taskText,
-          dateCreated: task.querySelector('.date-ForElement').textContent.trim(),
-          finishTask: checkbox.checked,
-          id: taskId
-        };
-      });
-
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-    };
-
-
-
-window.onload = function () {
-  // Focus on input field
-  theInput.focus();
-  // Check if local storage is supported by the browser
-  if (typeof(Storage) !== "undefined") {
-    // Retrieve tasks from local storage
-
-
-
-    let storedTasks = JSON.parse(localStorage.getItem('tasks'));
-    console.log(storedTasks);
-
-    // Clear existing tasks in the DOM
-    tasksContainer.innerHTML = '';
-    // Loop through the stored tasks and add them to the DOM if they exist
-    if (storedTasks) {
-      storedTasks.forEach(taskDetails => {
-        
-        addTask(taskDetails.text, taskDetails.dateCreated, taskDetails.finishTask, taskDetails.id);
-
-
-        console.log(taskDetails.finishTask);
-      });
-    }
-    // console.log(storedTasks);
-    
-    // Update task counts
-    calculate();
-    // Initialize the updateFromDOM function
-    // localStorage.setItem('tasks', JSON.stringify(storedTasks));
-    
-    // updateFromDOM();
-
-    // Check if there are no tasks and display appropriate message
-    if (!storedTasks || storedTasks.length === 0) {
-      noTasks();
-    }
-  } else {
-    console.log("Local storage is not supported in this browser.");
-  }
-};
-
-
-
-
 const observer = new MutationObserver((mutationsList) => {
   mutationsList.forEach(mutation => {
     if (mutation.type === 'childList') {
@@ -253,7 +234,6 @@ const observer = new MutationObserver((mutationsList) => {
   });
 });
 observer.observe(tasksContainer, { childList: true });
-
 
 function updateLocalStorageTaskCompletion(taskId, isCompleted) {
   let storedTasks = JSON.parse(localStorage.getItem('tasks')) ;
@@ -267,13 +247,13 @@ function updateLocalStorageTaskCompletion(taskId, isCompleted) {
   localStorage.setItem('tasks', JSON.stringify(storedTasks));
 }
 
-// 
 function handleTaskClick(e) {
   // Handle checkbox clicks
   if (e.target.type === 'checkbox') {
     let taskId = e.target.closest('.task-box').getAttribute('id');
     e.target.parentNode.classList.toggle('finished');
     updateLocalStorageTaskCompletion(taskId, e.target.checked);
+    // updateFromDOM()
   }
   // Handle clicking on task boxes
   if (e.target.classList.contains('task-box') && e.target.type !== 'checkbox') {
@@ -284,6 +264,7 @@ function handleTaskClick(e) {
     checkbox.checked = !checkbox.checked;
     checkbox.dispatchEvent(new Event('change'));
     updateLocalStorageTaskCompletion(taskId, checkbox.checked);
+    // updateFromDOM()
   }
   // Handle clicking on the "Finish All" button
   if (e.target.classList.contains('finish-all')) {
@@ -295,16 +276,13 @@ function handleTaskClick(e) {
       checkbox.checked = true;
       checkbox.dispatchEvent(new Event('change'));
       updateLocalStorageTaskCompletion(taskId, true);
+      // updateFromDOM()
     });
   }
   // calculate tasks
   calculate();
 }
-// */ 
 document.addEventListener('click', handleTaskClick);
-
-
-
 
 theAddButton.onclick = function () {
   // if input is empty 
