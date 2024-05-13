@@ -27,86 +27,82 @@ window.onload = function () {
 
 
 let iText = null;
-let taskDetails = [];
-
-
-function addTask(text, formattedDate,finish,boo) {
+function addTask(text, formattedDate, finish, boo) {
   // Check if the task already exists
-  let taskExists = Array.from(document.querySelectorAll('.task-box')).some(task => {
+  const taskExists = Array.from(document.querySelectorAll('.task-box')).some(task => {
     // Extract the task description from task.textContent
-    let taskText = task.querySelector('p').textContent.trim();
-    let taskDescription = taskText.split('Time of creation:')[0].trim();
+    const taskText = task.querySelector('p').textContent.trim();
+    const taskDescription = taskText.split('Time of creation:')[0].trim();
     // Compare the extracted task description with the input text
-    let comparisonResult = taskDescription.trim() === text;
-    return comparisonResult;
+    return taskDescription === text;
   });
 
-
-
-  if(taskExists){
+  if (taskExists) {
     // Task already exists, show error message
     Swal.fire({
       icon: "error",
       title: "Oops...",
       text: "Task exists, type a different task",
     });
-  } else {
+    return; // Exit function if task already exists
+  }
 
-    
-    // Create span element 
-    let mainSpan = document.createElement('span');
-    deleteAll.style.display = 'block';
-    finishAll.style.display = 'block';
-    // Append Delete Button  
-    mainSpan.innerHTML = svgCode;
-    iText = document.createElement('p')
-    iText.className += 'Text-task';
-    iText.appendChild(document.createTextNode(text))
-    // Add new text  
-    mainSpan.appendChild(iText);
-    // Add class to mainElement
-    mainSpan.className += 'task-box';
-    
-    // Format the date and time as desired
-    let elementDate = document.createElement('span');
-    elementDate.setAttribute('class', 'date-ForElement');
-    elementDate.innerHTML = `${formattedDate}`;
-    // Append element Date to main span
-    mainSpan.appendChild(elementDate);
+  // Create span element 
+  const mainSpan = document.createElement('span');
+  deleteAll.style.display = 'block';
+  finishAll.style.display = 'block';
+  // Append Delete Button  
+  mainSpan.innerHTML = svgCode;
+  
+  // Create paragraph for task text
+  const iText = document.createElement('p');
+  iText.className = 'Text-task';
+  iText.textContent = text;
+  // Append task text to main span
+  mainSpan.appendChild(iText);
 
+  // Add class to main span
+  mainSpan.classList.add('task-box');
 
-    // Store task details in local storage
-    addItemToCart(text ,formattedDate , finish,boo )
+  // Format the date and time as desired
+  const elementDate = document.createElement('span');
+  elementDate.className = 'date-ForElement';
+  elementDate.textContent = formattedDate;
+  // Append element Date to main span
+  mainSpan.appendChild(elementDate);
 
-    // Store task details in local storage
-    // boo.id = boo.id !== null ? boo.id : generateRandomId();
-    mainSpan.setAttribute('id',generateRandomId());
-    // create input checkbox 
-    let inputCheckbox = document.createElement('input')
-    inputCheckbox.setAttribute('type','checkbox')
-    // if(finish.finishTask){
-    //   console.log(inputCheckbox.checked);
-    // }
+  // Create input checkbox 
+  const inputCheckbox = document.createElement('input');
+  inputCheckbox.setAttribute('type', 'checkbox');
+  inputCheckbox.checked = finish;
+  inputCheckbox.className = 'inputChacked';
+  // Append checkbox to main span
+  mainSpan.appendChild(inputCheckbox);
 
-    
+  // Set task details
+  mainSpan.setAttribute('id', generateRandomId());
+  mainSpan.setAttribute('data-finish', finish);
 
-    // add class name 
-    inputCheckbox.className += 'inputChacked';
-    mainSpan.appendChild(inputCheckbox);
-    // Add the task to the container
-    tasksContainer.appendChild(mainSpan);
-    // Enable drag and drop for the task
-    mainSpan.draggable = true;
-    mainSpan.addEventListener(`dragstart`, (evt) => {
-      evt.target.classList.add(`selected`);
-    });
-    mainSpan.addEventListener(`dragend`, (evt) => {
-      evt.target.classList.remove(`selected`);
-    });
-    mainSpan.addEventListener(`dragover`, dragover)
-    calculate();
-  };
-};
+  // Add the task to the container
+  tasksContainer.appendChild(mainSpan);
+
+  // Store task details in local storage
+  addItemToCart(text, formattedDate, finish, boo);
+
+  // Enable drag and drop for the task
+  mainSpan.draggable = true;
+  mainSpan.addEventListener(`dragstart`, (evt) => {
+    evt.target.classList.add(`selected`);
+  });
+  mainSpan.addEventListener(`dragend`, (evt) => {
+    evt.target.classList.remove(`selected`);
+  });
+  mainSpan.addEventListener(`dragover`, dragover);
+
+  // Update task counts
+  calculate();
+}
+
 
 function addItemToCart(text,formattedDate,finish,boo)  {
   let storedTasks = JSON.parse(localStorage.getItem('tasks')||"[]"); // get current objects
@@ -123,68 +119,57 @@ function addItemToCart(text,formattedDate,finish,boo)  {
 }
 
 
-
-
-
-const updateFromDOM = () => {
-  const tasks = Array.from(tasksContainer.querySelectorAll('.task-box')).map((task, index) => {
-    let storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+function updateFromlocalStorageToDOM () {
+  // Retrieve tasks from the DOM
+  const tasks = Array.from(tasksContainer.querySelectorAll('.task-box')).map(task => {
     const taskText = task.querySelector('p').textContent.trim();
     const taskId = task.getAttribute('id');
     const checkbox = task.querySelector('input[type="checkbox"]');
-    // Update finishTask property based on checkbox state and add class to task element
-    storedTasks.forEach(storedTask => {
-      if (storedTask.id == taskId) {
-        checkbox.checked;
-        storedTask.finishTask
-        // task.classList.toggle('finished');
-      }
-    });
+    const isChecked = checkbox.checked;
 
-    // Add or update task in local storage
-    addItemToCart(taskText, task.querySelector('.date-ForElement').textContent.trim(), storedTasks.finishTask, taskId);
+    // Update the class based on the checkbox state
+    if (isChecked) {
+      task.classList.add('finished');
+    } else {
+      task.classList.remove('finished');
+    }
+
+    // Store the checkbox state in local storage
+    localStorage.setItem('tasks', isChecked ? 'true' : 'false');
 
     return {
       text: taskText,
       dateCreated: task.querySelector('.date-ForElement').textContent.trim(),
-      finishTask: storedTasks.finishTask,
+      finishTask: isChecked,
       id: taskId
     };
   });
-  console.log(tasks);
-  
+
+  // Update local storage with the task details
   localStorage.setItem('tasks', JSON.stringify(tasks));
-};
+}
 
 
 window.onload = function () {
   // Focus on input field
   theInput.focus();
-  // Check if local storage is supported by the browser
-  if (typeof(Storage) !== "undefined") {
 
+  // Check if local storage is supported by the browser
+  if (typeof (Storage) !== "undefined") {
     // Retrieve tasks from local storage
     let storedTasks = JSON.parse(localStorage.getItem('tasks'));
     // Clear existing tasks in the DOM
     tasksContainer.innerHTML = '';
-    // Loop through the stored tasks and add them to the DOM if they exist
+
+    // Add tasks from local storage to the DOM
     if (storedTasks) {
-      for (let i = 0; i < storedTasks.length; i++) {
-        let taskDetails = storedTasks[i];
-        addItemToCart(taskDetails.text,taskDetails.dateCreated,taskDetails.finishTask,taskDetails.id) 
-        //! console.log(taskDetails.finishTask);
-      }
+      storedTasks.forEach(taskDetails => {
+        addTask(taskDetails.text, taskDetails.dateCreated, taskDetails.finishTask, taskDetails.id);
+      });
     }
-    //! console.log(storedTasks);
-    
-
-
 
     // Update task counts
     calculate();
-    // Initialize the updateFromDOM function
-    // localStorage.setItem('tasks', JSON.stringify(storedTasks));
-    updateFromDOM();
 
     // Check if there are no tasks and display appropriate message
     if (!storedTasks || storedTasks.length === 0) {
@@ -194,6 +179,80 @@ window.onload = function () {
     console.log("Local storage is not supported in this browser.");
   }
 };
+
+
+
+const observer = new MutationObserver((mutationsList) => {
+  mutationsList.forEach(mutation => {
+    if (mutation.type === 'childList') {
+      updateFromlocalStorageToDOM();
+    }
+  });
+});
+observer.observe(tasksContainer, { childList: true });
+
+function updateLocalStorageTaskCompletion(taskId, isCompleted) {
+  let storedTasks = JSON.parse(localStorage.getItem('tasks')) ;
+  storedTasks.forEach(task => {
+    if (task.id === taskId) {
+      // Update the finishTask property
+      task.finishTask = isCompleted;
+    }
+  });
+  // Update local storage with the modified storedTasks array
+  localStorage.setItem('tasks', JSON.stringify(storedTasks));
+}
+
+
+
+function handleTaskClick(e) {
+  // Handle checkbox clicks
+  if (e.target.type === 'checkbox') {
+    let taskId = e.target.closest('.task-box').getAttribute('id');
+    e.target.parentNode.classList.toggle('finished');
+    updateLocalStorageTaskCompletion(taskId, e.target.checked);
+    updateFromlocalStorageToDOM()
+  }
+  // Handle clicking on task boxes
+  if (e.target.classList.contains('task-box') && e.target.type !== 'checkbox') {
+    let taskBox = e.target;
+    let checkbox = taskBox.querySelector('input[type="checkbox"]');
+    let taskId = taskBox.getAttribute('id');
+    e.target.classList.toggle('finished');
+    checkbox.checked = !checkbox.checked;
+    checkbox.dispatchEvent(new Event('change'));
+    updateLocalStorageTaskCompletion(taskId, checkbox.checked);
+    updateFromlocalStorageToDOM()
+  }
+  // Handle clicking on the "Finish All" button
+  if (e.target.classList.contains('finish-all')) {
+    let allTasks = document.querySelectorAll('.task-box');
+    allTasks.forEach(task => {
+      let checkbox = task.querySelector('input[type="checkbox"]');
+      let taskId = task.getAttribute('id');
+      task.classList.add('finished');
+      checkbox.checked = true;
+      checkbox.dispatchEvent(new Event('change'));
+      updateLocalStorageTaskCompletion(taskId, true);
+      updateFromlocalStorageToDOM()
+    });
+  }
+  // calculate tasks
+  calculate();
+}
+document.addEventListener('click', handleTaskClick);
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -225,64 +284,6 @@ function dragover (evt) {
   }
   tasksContainer.insertBefore(activeElement, nextElement);
 };
-
-const observer = new MutationObserver((mutationsList) => {
-  mutationsList.forEach(mutation => {
-    if (mutation.type === 'childList') {
-      updateFromDOM();
-    }
-  });
-});
-observer.observe(tasksContainer, { childList: true });
-
-function updateLocalStorageTaskCompletion(taskId, isCompleted) {
-  let storedTasks = JSON.parse(localStorage.getItem('tasks')) ;
-  storedTasks.forEach(task => {
-    if (task.id === taskId) {
-      // Update the finishTask property
-      task.finishTask = isCompleted;
-    }
-  });
-  // Update local storage with the modified storedTasks array
-  localStorage.setItem('tasks', JSON.stringify(storedTasks));
-}
-
-function handleTaskClick(e) {
-  // Handle checkbox clicks
-  if (e.target.type === 'checkbox') {
-    let taskId = e.target.closest('.task-box').getAttribute('id');
-    e.target.parentNode.classList.toggle('finished');
-    updateLocalStorageTaskCompletion(taskId, e.target.checked);
-    // updateFromDOM()
-  }
-  // Handle clicking on task boxes
-  if (e.target.classList.contains('task-box') && e.target.type !== 'checkbox') {
-    let taskBox = e.target;
-    let checkbox = taskBox.querySelector('input[type="checkbox"]');
-    let taskId = taskBox.getAttribute('id');
-    e.target.classList.toggle('finished');
-    checkbox.checked = !checkbox.checked;
-    checkbox.dispatchEvent(new Event('change'));
-    updateLocalStorageTaskCompletion(taskId, checkbox.checked);
-    // updateFromDOM()
-  }
-  // Handle clicking on the "Finish All" button
-  if (e.target.classList.contains('finish-all')) {
-    let allTasks = document.querySelectorAll('.task-box');
-    allTasks.forEach(task => {
-      let checkbox = task.querySelector('input[type="checkbox"]');
-      let taskId = task.getAttribute('id');
-      task.classList.add('finished');
-      checkbox.checked = true;
-      checkbox.dispatchEvent(new Event('change'));
-      updateLocalStorageTaskCompletion(taskId, true);
-      // updateFromDOM()
-    });
-  }
-  // calculate tasks
-  calculate();
-}
-document.addEventListener('click', handleTaskClick);
 
 theAddButton.onclick = function () {
   // if input is empty 
