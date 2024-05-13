@@ -25,7 +25,7 @@ window.onload = function () {
   theInput.focus();
 }
 
-
+let m = 1;
 let iText = null;
 function addTask(text, formattedDate, finish, boo) {
   // Check if the task already exists
